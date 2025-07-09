@@ -20,7 +20,7 @@ typedef struct {
 void get_packet_header(uint8_t* buffer, PacketHeader* header_packet);
 
 
-int create_ping_packet(PacketPing* packet); 
+void create_ping_packet(PacketPing* packet); 
 
 int serialize_ping_packet(uint8_t* buffer, PacketPing* packet); // returning size of buffer
 

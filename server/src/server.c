@@ -1,8 +1,12 @@
 #include "server.h"
+#include "libs/cthreads.h"
 #include "packets.h"
+#include <stdint.h>
+#include <stdio.h>
 
 int server_init(Server* server) {
     if (tcs_lib_init() != TCS_SUCCESS) {
+        perror("Could not init tcs\n");
         return 1;
     }
 
@@ -12,10 +16,12 @@ int server_init(Server* server) {
 
     server->server_socket = TCS_NULLSOCKET;
     if (tcs_create(&server->server_socket, TCS_TYPE_TCP_IP4) != TCS_SUCCESS) {
+        perror("Could not create tcs socket\n");
         return 1;
     }
 
     if (tcs_listen_to(server->server_socket, PORT) != TCS_SUCCESS) {
+        perror("Could not bind and listen to socket\n");
         return 1;
     }
     
@@ -52,25 +58,32 @@ void server_run(Server* server) {
 }
 
 void* server_handle_client(void* data) {
+    int return_code = 0;
+
     ThreadData thread_data = *(ThreadData*) data;
     Server* server = thread_data.server;
     TcsSocket client_socket = thread_data.client_socket;
 
     printf("[INFO] New Client Accepted\n");
 
-    for (;;) {
-        // idk implement some cross platform sleep function
 
-        PacketPing packet;
-        create_ping_packet(&packet);
-        
+    PacketPing packet;
+    create_ping_packet(&packet);
+    int size_packet = sizeof(PacketHeader) + sizeof(PacketPing);
+    uint8_t buffer[size_packet];
+    serialize_ping_packet(buffer, &packet);
 
-        // TODO: think about this
-
-        int WHAT_SHOULD_BE_THE_SIZE = sizeof(PacketHeader) + sizeof(PacketPing);
-        uint8_t buffer[WHAT_SHOULD_BE_THE_SIZE];
+    send_message(client_socket, buffer, sizeof(buffer));
+    return_code = tcs_send(client_socket, buffer, sizeof(buffer), TCS_MSG_SENDALL, NULL);
+    if (return_code == TCS_ERROR_SOCKET_CLOSED) {
+        goto shutdown_thread;
     }
 
+    for (;;) {
+        // idk implement some cross platform sleep function
+    }
+
+shutdown_thread:
     tcs_shutdown(client_socket, TCS_SD_BOTH);
     printf("[INFO] Closed Client Connection\n");
     tcs_destroy(&client_socket);
@@ -83,6 +96,15 @@ void send_message(TcsSocket client_socket, uint8_t* buffer, size_t buffer_size) 
 }
 
 void server_cleanup(Server* server) {
+    for (size_t i = 0; i < server->num_clients; ++i) {
+        if (cthreads_thread_cancel(server->threads[i]) != 0) {
+            printf("did not exit thread!\n");
+        }
+
+        tcs_shutdown(server->threads_data[i].client_socket, TCS_SD_BOTH);
+        tcs_destroy(&server->threads_data[i].client_socket);
+    }
+
     tcs_shutdown(server->server_socket, TCS_SD_BOTH);
     tcs_destroy(&server->server_socket);
 
