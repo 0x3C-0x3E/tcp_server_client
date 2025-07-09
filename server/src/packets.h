@@ -17,7 +17,11 @@ typedef struct {
     time_t rawtime; 
 } PacketPing;
 
-void create_ping_packet(PacketPing* packet);
+void get_packet_header(uint8_t* buffer, PacketHeader* header_packet);
 
-// returning the size of the buffer
-int serialize_ping_packet(uint8_t* buffer, PacketPing* packet);
+
+int create_ping_packet(PacketPing* packet); 
+
+int serialize_ping_packet(uint8_t* buffer, PacketPing* packet); // returning size of buffer
+
+void deserialize_ping_packet(uint8_t* buffer, PacketPing* packet);

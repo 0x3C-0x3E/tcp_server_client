@@ -1,4 +1,5 @@
 #include "server.h"
+#include "packets.h"
 
 int server_init(Server* server) {
     if (tcs_lib_init() != TCS_SUCCESS) {
@@ -57,11 +58,17 @@ void* server_handle_client(void* data) {
 
     printf("[INFO] New Client Accepted\n");
 
-    uint8_t b[] = "Hello from server!\n";
-    tcs_send(client_socket, b, sizeof(b), TCS_MSG_SENDALL, NULL);
-
     for (;;) {
+        // idk implement some cross platform sleep function
 
+        PacketPing packet;
+        create_ping_packet(&packet);
+        
+
+        // TODO: think about this
+
+        int WHAT_SHOULD_BE_THE_SIZE = sizeof(PacketHeader) + sizeof(PacketPing);
+        uint8_t buffer[WHAT_SHOULD_BE_THE_SIZE];
     }
 
     tcs_shutdown(client_socket, TCS_SD_BOTH);

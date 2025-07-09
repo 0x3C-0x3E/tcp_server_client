@@ -3,6 +3,12 @@
 #define TINYCSOCKET_IMPLEMENTATION
 #include "libs/tinycsocket.h"
 
+
+// TODO: fix this!
+// this is just for iteration speed
+#include "../../server/src/packets.h"
+
+
 int main(int argc, char* argv[]) {
     tcs_lib_init();
 

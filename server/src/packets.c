@@ -1,6 +1,12 @@
 #include "packets.h"
 #include <string.h>
 
+void get_packet_header(uint8_t* buffer, PacketHeader* header_packet) {
+    // unsafe to hell
+    // pls implement check before this function call
+    memcpy(header_packet, buffer, sizeof(PacketHeader));
+}
+
 void create_ping_packet(PacketPing* packet) {
     *packet = (PacketPing) {0};
     time(&packet->rawtime);
@@ -18,3 +24,7 @@ int serialize_ping_packet(uint8_t* buffer, PacketPing* packet) {
     return sizeof(PacketHeader) + sizeof(PacketPing);
 }
 
+void deserialize_ping_packet(uint8_t* buffer, PacketPing* packet) {
+    uint8_t* packet_addr = buffer + sizeof(PacketHeader);
+    memcpy(packet, packet_addr, sizeof(PacketPing));
+}
