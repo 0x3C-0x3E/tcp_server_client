@@ -18,9 +18,9 @@ int main(int argc, char* argv[]) {
     tcs_connect(client_socket, "192.168.179.22", 6969);
     
     for (;;) {
-        uint8_t recv_buffer[8192] = {0};
+        uint8_t recv_buffer[sizeof(PacketHeader)];
         size_t bytes_received = 0;
-        tcs_receive(client_socket, recv_buffer, 8192, TCS_NO_FLAGS, &bytes_received);
+        tcs_receive(client_socket, recv_buffer, sizeof(recv_buffer), TCS_NO_FLAGS, &bytes_received);
 
         printf("%s", recv_buffer);
     }
