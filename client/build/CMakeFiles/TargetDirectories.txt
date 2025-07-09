@@ -1,3 +1,0 @@
-/home/ruben/Desktop/c_projects/tcp_server_test/client/build/CMakeFiles/client.dir
-/home/ruben/Desktop/c_projects/tcp_server_test/client/build/CMakeFiles/edit_cache.dir
-/home/ruben/Desktop/c_projects/tcp_server_test/client/build/CMakeFiles/rebuild_cache.dir
