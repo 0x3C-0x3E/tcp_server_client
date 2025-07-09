@@ -1,0 +1,1 @@
+/usr/bin/cc -Wl,--dependency-file=CMakeFiles/client.dir/link.d CMakeFiles/client.dir/src/main.c.o -o client
