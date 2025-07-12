@@ -73,7 +73,7 @@ void* server_handle_client(void* data) {
     uint8_t buffer[size_packet];
     serialize_ping_packet(buffer, &packet);
 
-    send_message(client_socket, buffer, sizeof(buffer));
+    send_message(client_socket, buffer, size_packet);
     return_code = tcs_send(client_socket, buffer, sizeof(buffer), TCS_MSG_SENDALL, NULL);
     if (return_code == TCS_ERROR_SOCKET_CLOSED) {
         goto shutdown_thread;
