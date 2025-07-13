@@ -24,14 +24,14 @@ typedef struct {
     struct cthreads_thread recv_thread;
     struct cthreads_thread send_thread;
 
-} ClientThreadCollection;
+} ThreadCollection;
 
 typedef struct {
     Server* server;
     TcsSocket client_socket;
 
     // used for the recv thread to find the send thread
-    ClientThreadCollection* other_threads;
+    ThreadCollection* other_threads;
     SendData send_data;
 
 } ThreadData;
@@ -41,7 +41,7 @@ typedef struct Server {
     TcsSocket server_socket;
     
     size_t client_count; 
-    ClientThreadCollection threads[MAX_CLIENTS];
+    ThreadCollection threads[MAX_CLIENTS];
     ThreadData threads_data[MAX_CLIENTS];
 } Server;
 

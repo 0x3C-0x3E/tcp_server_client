@@ -37,7 +37,7 @@ void server_run(Server* server) {
         TcsSocket client_socket = TCS_NULLSOCKET;
         tcs_accept(server->server_socket, &client_socket, NULL);
 
-        server->threads[server->client_count] = (ThreadCollection) {0};
+        server->threads[server->client_count] = (ClientThreadCollection) {0};
         server->threads_data[server->client_count] = (ThreadData) {
             .server = server,
             .client_socket = client_socket,
@@ -92,7 +92,7 @@ void server_run(Server* server) {
 void* server_handle_client_recv(void* data) {
     ThreadData* thread_data = (ThreadData*) data;
 
-    // ThreadCollection* other_threads = thread_data->other_threads;
+    // ClientThreadCollection* other_threads = thread_data->other_threads;
 
     for (;;) {
         PacketHeader header;
@@ -161,7 +161,7 @@ void* server_handle_client_send(void* data) {
             printf("[DEBUG] Sending Data!\n");
             printf("Data:\n");
             for (size_t i = 0; i < thread_data->send_data.send_buffer->size; ++i) {
-                printf("%d", (int)*(uint8_t*) (thread_data->send_data.send_buffer->data + i * sizeof(uint8_t)));
+                printf("%d", (int)*(uint8_t*) thread_data->send_data.send_buffer->data + i * sizeof(uint8_t));
             }
             
 
