@@ -1,0 +1,4 @@
+# Sever architecture
+
+as networking is a recieve-response modell it makes sense to have a thread that recieves and handles the data and another thread, that sends back the data to resond with
+this is why for every client there are two threads in a ClientThreadCollection struct
