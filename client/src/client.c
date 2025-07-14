@@ -1,6 +1,5 @@
 #include "client.h"
 #include "libs/cthreads.h"
-#include "libs/d_array.h"
 #include "packets.h"
 #include <stdint.h>
 #include <stdio.h>
@@ -18,7 +17,8 @@ int client_init(Client* client) {
         .running = true,
         .client_socket = TCS_NULLSOCKET,
         .send_data = (SendData) {
-            .send_buffer = d_array_new(sizeof(uint8_t)),
+            .send_buffer = malloc(sizeof(uint8_t) * 1),
+            .send_buffer_size = 1,
             .new_send_data = false,
         },
     };
@@ -37,6 +37,8 @@ int client_init(Client* client) {
         printf("Could not Connect to Socket at Port: %d\n", PORT);
         return 1;
     }
+
+    printf("[INFO] Conn with Server established\n");
 
 
     if (cthreads_thread_create(&client->threads.recv_thread, NULL, client_handle_server_recv, (void*) client, NULL) != 0) {
@@ -92,6 +94,7 @@ void client_recv_header(Client* client, PacketHeader* header) {
 
 void client_recv_into_buffer(Client* client, uint8_t* buffer, size_t size) {
     tcs_receive(client->client_socket, buffer, size, TCS_NO_FLAGS, NULL);
+
 }
 
 void client_handle_packet(Client* client, PacketHeader* header, uint8_t* buffer, size_t size) {
@@ -112,15 +115,8 @@ void client_handle_packet_ping(Client* client, uint8_t* buffer, size_t size) {
     printf("    Rawtime:  %zu\n", ping.rawtime);
     printf("    Time Now: %zu\n\n", ping.rawtime);
 
+    client_send_ping_packet(client);
 
-    // Just for now just send a ping packet back
-    PacketPing packet;
-    create_ping_packet(&packet);
-    int size_packet = sizeof(PacketHeader) + sizeof(PacketPing);
-    uint8_t send_buffer[size_packet];
-    serialize_ping_packet(send_buffer, &packet);
-
-    client_queue_send_data(client, send_buffer, sizeof(send_buffer));
 }
 
 
@@ -131,7 +127,7 @@ void* client_handle_server_send(void* data) {
         if (client->send_data.new_send_data) {
             cthreads_mutex_lock(&client->send_data.send_lock);
 
-            tcs_send(client->client_socket, client->send_data.send_buffer->data, client->send_data.send_buffer->size, TCS_MSG_SENDALL, NULL);
+            tcs_send(client->client_socket, client->send_data.send_buffer, client->send_data.send_buffer_size, TCS_MSG_SENDALL, NULL);
             client->send_data.new_send_data = false;
 
             cthreads_mutex_unlock(&client->send_data.send_lock);
@@ -143,18 +139,24 @@ void client_queue_send_data(Client* client, uint8_t* buffer, size_t buffer_size)
     cthreads_mutex_lock(&client->send_data.send_lock);
     
     client->send_data.new_send_data = true;
-    d_array_copy(client->send_data.send_buffer, buffer, buffer_size);
 
+    client->send_data.send_buffer_size = buffer_size;
+    client->send_data.send_buffer = realloc(client->send_data.send_buffer, client->send_data.send_buffer_size);
+
+    memcpy(client->send_data.send_buffer, buffer, buffer_size);
     cthreads_mutex_unlock(&client->send_data.send_lock);
 
 }
 
 void client_send_ping_packet(Client* client) {
-    PacketPing packet;
-    create_ping_packet(&packet);
+    PacketPing send_packet;
+    create_ping_packet(&send_packet);
 
     size_t packet_size = sizeof(PacketHeader) + sizeof(PacketPing);
     uint8_t send_buffer[packet_size];
+
+    serialize_ping_packet(send_buffer, &send_packet);
+
     client_queue_send_data(client, send_buffer, packet_size);
 }
 
@@ -163,7 +165,8 @@ void client_cleanup(Client* client) {
     tcs_destroy(&client->client_socket);
 
     cthreads_mutex_destroy(&client->send_data.send_lock);
-    d_array_free(client->send_data.send_buffer);
+
+    free(client->send_data.send_buffer);
 
     tcs_lib_free();
 }

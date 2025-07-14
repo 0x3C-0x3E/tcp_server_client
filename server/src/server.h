@@ -16,7 +16,8 @@ typedef struct Server Server;
 typedef struct {
     bool new_send_data; 
     struct cthreads_mutex send_lock;
-    D_Array* send_buffer;
+    uint8_t* send_buffer;
+    size_t send_buffer_size;
 
 } SendData;
 

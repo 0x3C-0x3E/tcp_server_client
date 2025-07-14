@@ -3,6 +3,8 @@
 #include "libs/d_array.h"
 #include "packets.h"
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 #include <time.h>
 
@@ -43,7 +45,8 @@ void server_run(Server* server) {
             .client_socket = client_socket,
             .other_threads = &server->threads[server->client_count],
             .send_data = (SendData) {
-                .send_buffer = d_array_new(sizeof(uint8_t)),
+                .send_buffer = (uint8_t*) malloc(sizeof(uint8_t) * 1),
+                .send_buffer_size = 1,
                 .new_send_data = false,
             },
         };
@@ -120,12 +123,18 @@ void thread_recv_header(ThreadData* thread_data, PacketHeader* header) {
 
 void thread_recv_into_buffer(ThreadData* thread_data, uint8_t* buffer, size_t size) {
     tcs_receive(thread_data->client_socket, buffer, size, TCS_NO_FLAGS, NULL);
+    printf("[DEBUG] recv new Buffer:\n");
+    for (size_t i = 0; i < size; ++i) {
+            printf("    %zu: %u | 0x%02X\n", i, buffer[i], buffer[i]);
+    }
+    printf("\n");
 }
 
 void thread_handle_packet(ThreadData* thread_data, PacketHeader* header, uint8_t* buffer, size_t size) {
      
     switch (header->type) {
         case PACKET_PING:
+            handle_packet_ping(thread_data, buffer, size);
             break;
     }
 }
@@ -145,8 +154,6 @@ void handle_packet_ping(ThreadData* thread_data, uint8_t* buffer, size_t size) {
 }
 
 
-
-
 void* server_handle_client_send(void* data) {
     ThreadData* thread_data = (ThreadData*) data;
 
@@ -155,18 +162,9 @@ void* server_handle_client_send(void* data) {
              
             cthreads_mutex_lock(&thread_data->send_data.send_lock);
 
-            tcs_send(thread_data->client_socket, thread_data->send_data.send_buffer->data, thread_data->send_data.send_buffer->size, TCS_MSG_SENDALL, NULL);
+            tcs_send(thread_data->client_socket, thread_data->send_data.send_buffer, thread_data->send_data.send_buffer_size, TCS_MSG_SENDALL, NULL);
             thread_data->send_data.new_send_data = false;
 
-            printf("[DEBUG] Sending Data!\n");
-            printf("Data:\n");
-            for (size_t i = 0; i < thread_data->send_data.send_buffer->size; ++i) {
-                printf("%d", (int)*(uint8_t*) (thread_data->send_data.send_buffer->data + i * sizeof(uint8_t)));
-            }
-            
-
-            printf("\n");
-            
             cthreads_mutex_unlock(&thread_data->send_data.send_lock);
         }
     }
@@ -175,9 +173,12 @@ void* server_handle_client_send(void* data) {
 
 void sever_queue_new_send_data(SendData* send_data, uint8_t* buffer, size_t buffer_size) {
     cthreads_mutex_lock(&send_data->send_lock);
-    
+
     send_data->new_send_data = true;
-    d_array_copy(send_data->send_buffer, buffer, buffer_size);
+    send_data->send_buffer_size = buffer_size;
+    send_data->send_buffer = realloc(send_data->send_buffer, send_data->send_buffer_size);
+
+    memcpy(send_data->send_buffer, buffer, buffer_size);
 
     cthreads_mutex_unlock(&send_data->send_lock);
 }
@@ -187,6 +188,8 @@ void server_send_ping_packet(ThreadData* thread_data) {
     create_ping_packet(&send_packet);
     size_t packet_size = sizeof(PacketHeader) + sizeof(PacketPing);
     uint8_t send_buffer[packet_size];
+
+    serialize_ping_packet(send_buffer, &send_packet);
 
     sever_queue_new_send_data(&thread_data->send_data, send_buffer, packet_size);
 }
@@ -203,7 +206,7 @@ void server_cleanup(Server* server) {
         tcs_shutdown(server->threads_data[i].client_socket, TCS_SD_BOTH);
         tcs_destroy(&server->threads_data[i].client_socket);
 
-        d_array_free(server->threads_data[i].send_data.send_buffer);
+        free(server->threads_data[i].send_data.send_buffer);
     }
 
     tcs_shutdown(server->server_socket, TCS_SD_BOTH);
