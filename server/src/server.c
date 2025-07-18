@@ -1,10 +1,6 @@
 #include "server.h"
-#include "libs/cthreads.h"
-#include "libs/d_array.h"
-#include "packets.h"
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
+#include "packets/packets.h"
+#include "packets/types/ping_packet.h"
 #include <sys/types.h>
 #include <time.h>
 
@@ -113,8 +109,8 @@ void* server_handle_client_recv(void* data) {
 void thread_recv_header(ThreadData* thread_data, PacketHeader* header) {
     uint8_t recv_buffer[sizeof(PacketHeader)];
     thread_recv_into_buffer(thread_data, recv_buffer, sizeof(recv_buffer));
-
-    get_packet_header(recv_buffer, header);
+    
+    packet_deserialize_header(header, recv_buffer);
 
     printf("[INFO] Deserialized Packet Header:\n");
     printf("    Type: %d\n", header->type);
@@ -133,21 +129,21 @@ void thread_recv_into_buffer(ThreadData* thread_data, uint8_t* buffer, size_t si
 void thread_handle_packet(ThreadData* thread_data, PacketHeader* header, uint8_t* buffer, size_t size) {
      
     switch (header->type) {
-        case PACKET_PING:
+        case PACKET_TYPE_PING:
             handle_packet_ping(thread_data, buffer, size);
             break;
     }
 }
 
 void handle_packet_ping(ThreadData* thread_data, uint8_t* buffer, size_t size) {
-    PacketPing ping;
-    deserialize_ping_packet(buffer, &ping);
-
+    PingPacket ping;
+    memcpy(&ping, buffer, sizeof(PingPacket));
+    
     time_t curr_time;
     time(&curr_time);
     printf("[INFO] Recieved a Ping Packet\n");
-    printf("    Rawtime:  %zu\n", ping.rawtime);
-    printf("    Time Now: %zu\n\n", ping.rawtime);
+    printf("    Rawtime:  %zu\n", ping.ping_time);
+    printf("    Time Now: %zu\n\n", ping.ping_time);
     
     // Just for now sending new ping packet back 
     server_send_ping_packet(thread_data);
@@ -184,14 +180,19 @@ void sever_queue_new_send_data(SendData* send_data, uint8_t* buffer, size_t buff
 }
 
 void server_send_ping_packet(ThreadData* thread_data) {
-    PacketPing send_packet;
-    create_ping_packet(&send_packet);
-    size_t packet_size = sizeof(PacketHeader) + sizeof(PacketPing);
-    uint8_t send_buffer[packet_size];
+    
+    PingPacket* payload = ping_packet_create();
+    size_t buffer_size;
+    Packet* packet = packet_create(PACKET_TYPE_PING, (void*) payload, sizeof(PingPacket), &buffer_size);
 
-    serialize_ping_packet(send_buffer, &send_packet);
+    uint8_t buffer[buffer_size];
 
-    sever_queue_new_send_data(&thread_data->send_data, send_buffer, packet_size);
+    packet_serialize(packet, buffer, buffer_size);
+
+    packet_destory(packet);
+
+
+    sever_queue_new_send_data(&thread_data->send_data, buffer, buffer_size);
 }
 
 void server_cleanup(Server* server) {

@@ -5,6 +5,9 @@
 #include <string.h>
 #include <time.h>
 
+#include "types/data_packet.h"
+#include "types/ping_packet.h"
+
 typedef enum {
     PACKET_TYPE_PING = 0,
     PACKET_TYPE_RAW_DATA = 0,
@@ -28,4 +31,6 @@ Packet *packet_create(uint16_t type, void *payload, size_t payload_size, size_t 
 
 void packet_destory(Packet *packet);
 
-void serialize_packet(Packet *packet, uint16_t *buffer, size_t buffer_size);
+void packet_serialize(Packet *packet, uint8_t *buffer, size_t buffer_size);
+
+void packet_deserialize_header(PacketHeader *header, uint8_t* buffer);

@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "libs/tinycsocket.h"
-#include "packets.h"
+#include "packets/packets.h"
 #include "libs/cthreads.h"
 
 #define PORT 6969

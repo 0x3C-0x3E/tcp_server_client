@@ -23,9 +23,13 @@ void packet_destory(Packet *packet) {
     }
 }
 
-void serialize_packet(Packet *packet, uint16_t *buffer, size_t buffer_size) {
+void packet_serialize(Packet *packet, uint8_t *buffer, size_t buffer_size) {
     memcpy(buffer, &packet->header, sizeof(PacketHeader));
     memcpy(buffer, packet->payload, packet->header.length);
 
+}
+
+void packet_deserialize_header(PacketHeader *header, uint8_t* buffer) {
+    memcpy(header, buffer, sizeof(PacketHeader));
 }
 
