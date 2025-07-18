@@ -17,7 +17,7 @@ int serialize_ping_packet(uint8_t* buffer, PacketPing* packet) {
     };
     
     memcpy(buffer, &header, sizeof(PacketHeader));
-    memcpy(buffer + sizeof(PacketHeader), &header, sizeof(PacketHeader));
+    memcpy(buffer + sizeof(PacketHeader), packet, sizeof(PacketPing));
 
     return sizeof(PacketHeader) + sizeof(PacketPing);
 }
