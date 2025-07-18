@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include "libs/d_array.h"
 #include "libs/tinycsocket.h"
 #include "packets.h"
 #include "libs/cthreads.h"
