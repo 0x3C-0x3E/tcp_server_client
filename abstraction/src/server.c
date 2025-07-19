@@ -2,6 +2,7 @@
 #include "packets/packets.h"
 #include "packets/types/ping_packet.h"
 #include "threads.h"
+#include <sys/types.h>
 
 int server_init(Server* server) {
     if (tcs_lib_init() != TCS_SUCCESS) {
@@ -29,11 +30,14 @@ int server_init(Server* server) {
     return 0;
 }
 
+
 void server_run(Server* server) {
     while (server->running) {
         TcsSocket client_socket = TCS_NULLSOCKET;
         tcs_accept(server->server_socket, &client_socket, NULL); 
-        threads_init(&server->threads[server->threads_count], server_handle_packets, server->server_socket, (void*) server);
+        threads_init(&server->threads[server->threads_count], server_handle_packets, client_socket, (void*) server);
+        
+        server_send_ping_packet(server, &server->threads[server->threads_count]);
 
         server->threads_count ++;
     }
@@ -43,6 +47,10 @@ void server_handle_packets(void* base_context, PacketHeader header, uint8_t* pay
     switch (header.type) {
         case PACKET_TYPE_PING:
             server_handle_ping_packet((Server*) base_context, payload, payload_size);
+            break;
+        default:
+            printf("[ERROR] Unknown Packet Type!\n");
+            break;
     }
 }
 
@@ -52,6 +60,22 @@ void server_handle_ping_packet(Server* server, uint8_t* payload, size_t payload_
     printf("[INFO] Recieved ping packet\n");
     printf("    Ping time: %ld\n", packet.ping_time);
     printf("\n");
+}
+
+
+void server_send_ping_packet(Server* server, ThreadCollection* collection) {
+    PingPacket* payload = ping_packet_create();
+    size_t buffer_size;
+    Packet* packet = packet_create(PACKET_TYPE_PING, (void*) payload, sizeof(PingPacket), &buffer_size);
+
+    uint8_t buffer[buffer_size];
+
+    packet_serialize(packet, buffer, buffer_size);
+
+    packet_destory(packet);
+    
+    threads_queue_new_send_data(collection, buffer, buffer_size);
+
 }
 
 void server_cleanup(Server* server) {

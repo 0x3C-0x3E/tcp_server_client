@@ -1,5 +1,4 @@
 #include "threads.h"
-#include "packets/packets.h"
 
 void threads_init(ThreadCollection* collection, void (*packet_handle_function) (void* base_context, PacketHeader header, uint8_t* payload, size_t payload_size), TcsSocket socket, void* base_context) {
     *collection = (ThreadCollection) {0}; // prolly unnecessary
@@ -54,7 +53,7 @@ void* threads_run_recv_thread(void* data) {
 
     // just for convenience sake
     ThreadData* thread_data = &collection->thread_data;
-    SendData* send_data = &collection->thread_data.send_data;
+    // SendData* send_data = &collection->thread_data.send_data;
     
     for(;;) {
         PacketHeader header;

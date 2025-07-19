@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include "libs/tinycsocket.h"
-#include "packets/packets.h"
-#include "libs/cthreads.h"
+#include "../libs/tinycsocket.h"
+#include "../packets/packets.h"
+#include "../libs/cthreads.h"
 
 typedef struct {
     bool new_send_data; 
