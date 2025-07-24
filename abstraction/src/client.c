@@ -52,6 +52,8 @@ void client_handle_ping_packet(Client* client, uint8_t* payload, size_t payload_
     printf("[INFO] Recieved ping packet\n");
     printf("    Ping time: %ld\n", packet.ping_time);
     printf("\n");
+
+    client_send_ping_packet(client, &client->threads);
 }
 
 void client_send_ping_packet(Client* client, ThreadCollection* collection) {
