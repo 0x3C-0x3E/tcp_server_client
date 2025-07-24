@@ -27,11 +27,13 @@ void packet_destory(Packet *packet) {
 void packet_serialize(Packet *packet, uint8_t *buffer, size_t buffer_size) {
     memcpy(buffer, &packet->header, sizeof(PacketHeader));
     memcpy(buffer + sizeof(PacketHeader), packet->payload, packet->header.length);
+#ifdef DEBUG_PRINT
     printf("[DEBUG] Serialized Buffer:\n");
     for (size_t i = 0; i < buffer_size; ++i) {
             printf("    %zu: %u | 0x%02X\n", i, buffer[i], buffer[i]);
     }
     printf("\n");
+#endif
 }
 
 void packet_deserialize_header(PacketHeader *header, uint8_t* buffer) {

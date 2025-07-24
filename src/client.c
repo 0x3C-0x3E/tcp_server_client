@@ -1,4 +1,7 @@
 #include "client.h"
+#include "packets/types/data_packet.h"
+#include <stdint.h>
+#include <string.h>
 
 int client_init(Client* client) {
     if (tcs_lib_init() != 0) {
@@ -30,7 +33,10 @@ int client_init(Client* client) {
 
 void client_run(Client* client) {
     for (;;) {
-    
+        uint8_t input_buffer[DATA_PACKET_SIZE];
+        memset(&input_buffer, 0, DATA_PACKET_SIZE);
+        fgets((char*) input_buffer, DATA_PACKET_SIZE, stdin);
+        client_send_data_packet(client, &client->threads, (uint8_t*) input_buffer, strlen((char*) input_buffer));
     }
 }
 
@@ -60,6 +66,20 @@ void client_send_ping_packet(Client* client, ThreadCollection* collection) {
     PingPacket* payload = ping_packet_create();
     size_t buffer_size;
     Packet* packet = packet_create(PACKET_TYPE_PING, (void*) payload, sizeof(PingPacket), &buffer_size);
+
+    uint8_t buffer[buffer_size];
+
+    packet_serialize(packet, buffer, buffer_size);
+
+    packet_destory(packet);
+    
+    threads_queue_new_send_data(collection, buffer, buffer_size);
+}
+
+void client_send_data_packet(Client* client, ThreadCollection* collection, uint8_t* data_buffer, size_t data_buffer_size) {
+    DataPacket* payload = data_packet_create(data_buffer, data_buffer_size);
+    size_t buffer_size;
+    Packet* packet = packet_create((uint16_t) PACKET_TYPE_RAW_DATA, (void*) payload, sizeof(DataPacket), &buffer_size);
 
     uint8_t buffer[buffer_size];
 

@@ -10,7 +10,7 @@
 
 typedef enum {
     PACKET_TYPE_PING = 0,
-    PACKET_TYPE_RAW_DATA = 0,
+    PACKET_TYPE_RAW_DATA = 1,
     
 } PACKET_TYPES;
 

@@ -28,6 +28,8 @@ void server_handle_packets(void* base_context, PacketHeader header, uint8_t* pay
 
 void server_handle_ping_packet(Server* server, uint8_t* payload, size_t payload_size);
 
+void server_handle_data_packet(Server* server, uint8_t* payload, size_t payload_size);
+
 void server_send_ping_packet(Server* server, ThreadCollection* collection);
 
 void server_cleanup(Server* server);

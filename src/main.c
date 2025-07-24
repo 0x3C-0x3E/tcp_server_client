@@ -6,6 +6,7 @@
 #define TINYCSOCKET_IMPLEMENTATION
 #include "libs/tinycsocket.h"
 
+// #define DEBUG_PRINT
 #include "server.h"
 #include "client.h"
 

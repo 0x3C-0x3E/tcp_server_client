@@ -102,10 +102,12 @@ void threads_recv_into_buffer(ThreadCollection* collection, uint8_t* buffer, siz
 
     memcpy(buffer, tmp_recv_buffer, size);
 
+#ifdef DEBUG_PRINT
     printf("[DEBUG] recv new Buffer:\n");
     for (size_t i = 0; i < size; ++i) {
             printf("    %zu: %u | 0x%02X\n", i, buffer[i], buffer[i]);
     }
+#endif
     printf("\n");
 }
 
