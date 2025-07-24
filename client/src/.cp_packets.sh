@@ -1,1 +1,0 @@
-cp ../../server/src/packets.* .
