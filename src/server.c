@@ -45,6 +45,17 @@ void server_run(Server* server) {
 }
 
 void server_handle_packets(void* base_context, PacketHeader header, uint8_t* payload, size_t payload_size) {
+    switch (header.flag) {
+        case PACKET_HEADER_FLAG_NONE:
+            break;
+        case PACKET_HEADER_FLAG_SEND_TO_ALL:
+            server_send_to_all((Server*) base_context, header, payload, payload_size, 0); // TODO: fix this
+            break;
+        default:
+            printf("[ERROR] Unknown Header Flag!\n");
+            break;
+    }
+
     switch (header.type) {
         case PACKET_TYPE_PING:
             server_handle_ping_packet((Server*) base_context, payload, payload_size);
@@ -81,7 +92,7 @@ void server_handle_data_packet(Server* server, uint8_t* payload, size_t payload_
 void server_send_ping_packet(Server* server, ThreadCollection* collection) {
     PingPacket* payload = ping_packet_create();
     size_t buffer_size;
-    Packet* packet = packet_create(PACKET_TYPE_PING, (void*) payload, sizeof(PingPacket), &buffer_size);
+    Packet* packet = packet_create(PACKET_TYPE_PING, PACKET_HEADER_FLAG_NONE, (void*) payload, sizeof(PingPacket), &buffer_size);
 
     uint8_t buffer[buffer_size];
 
@@ -91,6 +102,28 @@ void server_send_ping_packet(Server* server, ThreadCollection* collection) {
     
     threads_queue_new_send_data(collection, buffer, buffer_size);
 
+}
+
+void server_send_to_all(Server* server, PacketHeader header, uint8_t* payload, size_t payload_size, size_t origin_thread) {
+
+    // reconstruct packet
+    size_t buffer_size;
+    Packet* packet = packet_create(header.type, header.flag, payload, payload_size, &buffer_size);
+
+    uint8_t buffer[buffer_size];
+
+    packet_serialize(packet, buffer, buffer_size);
+
+    // packet_destory(packet);
+    free(packet);
+
+    for (int i = 0; i < server->threads_count; ++i) {
+        if (i == origin_thread) {
+            continue;
+        }
+
+        threads_queue_new_send_data(&server->threads[i], buffer, buffer_size);
+    }
 }
 
 void server_cleanup(Server* server) {

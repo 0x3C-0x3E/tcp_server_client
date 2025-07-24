@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#define PORT 6969
+#include "config.h"
 
 typedef struct {
     bool running;

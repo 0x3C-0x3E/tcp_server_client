@@ -1,12 +1,13 @@
 #include "packets.h"
 #include <stdio.h>
 
-Packet *packet_create(uint16_t type, void *payload, size_t payload_size, size_t *serialisation_buffer_size) {
+Packet *packet_create(uint16_t type, uint16_t flag, void *payload, size_t payload_size, size_t *serialisation_buffer_size) {
     Packet* packet = (Packet*) malloc(sizeof(Packet));
 
     *packet = (Packet) {
         .header = (PacketHeader) {
             .type = type,
+            .flag = flag,
             .length = payload_size,
         },
         .payload = payload,

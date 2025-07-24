@@ -9,7 +9,8 @@
 #include "packets/types/ping_packet.h"
 #include "threads/threads.h"
 
-#define PORT 6969
+#include "config.h"
+
 #define MAX_CLIENTS 128
 
 typedef struct {
@@ -31,5 +32,7 @@ void server_handle_ping_packet(Server* server, uint8_t* payload, size_t payload_
 void server_handle_data_packet(Server* server, uint8_t* payload, size_t payload_size);
 
 void server_send_ping_packet(Server* server, ThreadCollection* collection);
+
+void server_send_to_all(Server* server, PacketHeader header, uint8_t* payload, size_t payload_size, size_t origin_thread);
 
 void server_cleanup(Server* server);

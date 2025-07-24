@@ -14,9 +14,16 @@ typedef enum {
     
 } PACKET_TYPES;
 
+typedef enum {
+    PACKET_HEADER_FLAG_NONE = 0, 
+    PACKET_HEADER_FLAG_SEND_TO_ALL = 1, 
+} PACKET_HEADER_FLAGS;
+
 typedef struct {
-    uint16_t type;    
+    uint16_t type;
+    uint16_t flag;
     uint16_t length;
+
 } PacketHeader;
 
 typedef struct {
@@ -27,7 +34,7 @@ typedef struct {
 // NOTE: any non generic packet like ping_packet CAN NOT have any pointer to memory outside of the struct itself,
 // meaning no heap, or dynamic arrays, which size arent known at compiliation time 
 
-Packet *packet_create(uint16_t type, void *payload, size_t payload_size, size_t *serialisation_buffer_size);
+Packet *packet_create(uint16_t type, uint16_t flag, void *payload, size_t payload_size, size_t *serialisation_buffer_size);
 
 void packet_destory(Packet *packet);
 

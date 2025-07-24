@@ -1,4 +1,5 @@
 #include "client.h"
+#include "packets/packets.h"
 #include "packets/types/data_packet.h"
 #include <stdint.h>
 #include <string.h>
@@ -65,7 +66,7 @@ void client_handle_ping_packet(Client* client, uint8_t* payload, size_t payload_
 void client_send_ping_packet(Client* client, ThreadCollection* collection) {
     PingPacket* payload = ping_packet_create();
     size_t buffer_size;
-    Packet* packet = packet_create(PACKET_TYPE_PING, (void*) payload, sizeof(PingPacket), &buffer_size);
+    Packet* packet = packet_create(PACKET_TYPE_PING, PACKET_HEADER_FLAG_NONE, (void*) payload, sizeof(PingPacket), &buffer_size);
 
     uint8_t buffer[buffer_size];
 
@@ -79,13 +80,13 @@ void client_send_ping_packet(Client* client, ThreadCollection* collection) {
 void client_send_data_packet(Client* client, ThreadCollection* collection, uint8_t* data_buffer, size_t data_buffer_size) {
     DataPacket* payload = data_packet_create(data_buffer, data_buffer_size);
     size_t buffer_size;
-    Packet* packet = packet_create((uint16_t) PACKET_TYPE_RAW_DATA, (void*) payload, sizeof(DataPacket), &buffer_size);
+    Packet* packet = packet_create(PACKET_TYPE_RAW_DATA, PACKET_HEADER_FLAG_SEND_TO_ALL, (void*) payload, sizeof(DataPacket), &buffer_size);
 
     uint8_t buffer[buffer_size];
 
     packet_serialize(packet, buffer, buffer_size);
-
-    packet_destory(packet);
+    
+    free(packet);
     
     threads_queue_new_send_data(collection, buffer, buffer_size);
 }

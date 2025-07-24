@@ -7,6 +7,8 @@
 #include "../packets/packets.h"
 #include "../libs/cthreads.h"
 
+#include "../config.h"
+
 typedef struct {
     bool new_send_data; 
     struct cthreads_mutex send_lock;
