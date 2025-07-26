@@ -46,6 +46,9 @@ void client_handle_packets(void* base_context, PacketHeader header, uint8_t* pay
         case PACKET_TYPE_PING:
             client_handle_ping_packet((Client*) base_context, payload, payload_size);
             break;
+        case PACKET_TYPE_RAW_DATA:
+            client_handle_data_packet((Client*) base_context, payload, payload_size);
+            break;
         default:
             printf("[ERROR] Unknown Packet Type!\n");
             break;
@@ -61,6 +64,17 @@ void client_handle_ping_packet(Client* client, uint8_t* payload, size_t payload_
     printf("\n");
 
     client_send_ping_packet(client, &client->threads);
+}
+
+void client_handle_data_packet(Client* client, uint8_t* payload, size_t payload_size) {
+    DataPacket packet;
+    memcpy(&packet, payload, payload_size);
+    printf("[INFO] Recieved raw data packet\n");
+    printf("    ");
+    for (size_t i = 0; i < packet.actual_data_size; i++) {
+        printf("%c", packet.data[i]);
+    }
+    printf("\n");
 }
 
 void client_send_ping_packet(Client* client, ThreadCollection* collection) {

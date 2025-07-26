@@ -106,18 +106,16 @@ void server_send_ping_packet(Server* server, ThreadCollection* collection) {
 
 void server_send_to_all(Server* server, PacketHeader header, uint8_t* payload, size_t payload_size, size_t origin_thread) {
 
-    // reconstruct packet
     size_t buffer_size;
-    Packet* packet = packet_create(header.type, header.flag, payload, payload_size, &buffer_size);
+    Packet* packet = packet_create(header.type, PACKET_HEADER_FLAG_NONE, payload, payload_size, &buffer_size);
 
     uint8_t buffer[buffer_size];
 
     packet_serialize(packet, buffer, buffer_size);
 
-    // packet_destory(packet);
     free(packet);
 
-    for (int i = 0; i < server->threads_count; ++i) {
+    for (size_t i = 0; i < server->threads_count; ++i) {
         if (i == origin_thread) {
             continue;
         }

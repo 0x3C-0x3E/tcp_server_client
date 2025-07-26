@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DATA_PACKET_SIZE 255
+#define DATA_PACKET_SIZE 64 
 
 typedef struct {
     size_t actual_data_size;
