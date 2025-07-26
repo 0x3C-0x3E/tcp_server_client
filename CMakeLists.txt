@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(client C)
+project(tcp_project C)
 
 set(CMAKE_C_STANDARD 11)
 
