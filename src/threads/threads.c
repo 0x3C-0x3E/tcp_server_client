@@ -1,11 +1,12 @@
 #include "threads.h"
 
-void threads_init(ThreadCollection* collection, void (*packet_handle_function) (void* base_context, PacketHeader header, uint8_t* payload, size_t payload_size), TcsSocket socket, void* base_context) {
+void threads_init(ThreadCollection* collection, void (*packet_handle_function) (void* base_context, size_t thread_id, PacketHeader header, uint8_t* payload, size_t payload_size), TcsSocket socket, void* base_context, size_t thread_id) {
     *collection = (ThreadCollection) {0}; // prolly unnecessary
     collection->thread_data = (ThreadData) {
         .packet_handle_function = packet_handle_function,
         .socket = socket,
         .base_context = base_context,
+        .thread_id = thread_id,
         .send_data = (SendData) {
             .new_send_data = false,
             .send_buffer = (uint8_t*) malloc(sizeof(uint8_t) * 1),
@@ -63,7 +64,7 @@ void* threads_run_recv_thread(void* data) {
         size_t payload_size = header.length;
         threads_recv_into_buffer(collection, payload, payload_size);
 
-        collection->thread_data.packet_handle_function(thread_data->base_context, header, payload, payload_size);
+        collection->thread_data.packet_handle_function(thread_data->base_context, thread_data->thread_id, header, payload, payload_size);
 
     }
     return NULL;

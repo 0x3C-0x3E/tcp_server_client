@@ -18,8 +18,10 @@ typedef struct {
 
 typedef struct {
     TcsSocket socket;
-    void (*packet_handle_function) (void* base_context, PacketHeader header, uint8_t* payload, size_t payload_size);
+    void (*packet_handle_function) (void* base_context, size_t thread_id, PacketHeader header, uint8_t* payload, size_t payload_size);
     void* base_context;
+
+    size_t thread_id;
 
     SendData send_data;
 } ThreadData;
@@ -32,7 +34,7 @@ typedef struct {
 
 } ThreadCollection;
 
-void threads_init(ThreadCollection* collection, void (*packet_handle_function) (void* base_context, PacketHeader header, uint8_t* payload, size_t payload_size), TcsSocket socket, void* base_context);
+void threads_init(ThreadCollection* collection, void (*packet_handle_function) (void* base_context, size_t thread_id, PacketHeader header, uint8_t* payload, size_t payload_size), TcsSocket socket, void* base_context, size_t thread_id);
 
 void* threads_run_recv_thread(void* data); // ThreadCollection collection
 

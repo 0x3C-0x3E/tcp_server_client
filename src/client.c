@@ -25,7 +25,7 @@ int client_init(Client* client) {
         return 1;
     }
 
-    threads_init(&client->threads, client_handle_packets, client->client_socket, (void*) client);
+    threads_init(&client->threads, client_handle_packets, client->client_socket, (void*) client, 0);
 
 
     printf("[INFO] Conn with Server established\n");
@@ -41,7 +41,7 @@ void client_run(Client* client) {
     }
 }
 
-void client_handle_packets(void* base_context, PacketHeader header, uint8_t* payload, size_t payload_size) {
+void client_handle_packets(void* base_context, size_t thread_id, PacketHeader header, uint8_t* payload, size_t payload_size) {
     switch (header.type) {
         case PACKET_TYPE_PING:
             client_handle_ping_packet((Client*) base_context, payload, payload_size);

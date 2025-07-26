@@ -22,7 +22,7 @@ int client_init(Client* client);
 
 void client_run(Client* client);
 
-void client_handle_packets(void* base_context, PacketHeader header, uint8_t* payload, size_t payload_size);
+void client_handle_packets(void* base_context, size_t thread_id, PacketHeader header, uint8_t* payload, size_t payload_size);
 
 void client_handle_ping_packet(Client* client, uint8_t* payload, size_t payload_size);
 

@@ -36,7 +36,7 @@ void server_run(Server* server) {
     while (server->running) {
         TcsSocket client_socket = TCS_NULLSOCKET;
         tcs_accept(server->server_socket, &client_socket, NULL); 
-        threads_init(&server->threads[server->threads_count], server_handle_packets, client_socket, (void*) server);
+        threads_init(&server->threads[server->threads_count], server_handle_packets, client_socket, (void*) server, server->threads_count);
         
         server_send_ping_packet(server, &server->threads[server->threads_count]);
 
@@ -44,12 +44,12 @@ void server_run(Server* server) {
     }
 }
 
-void server_handle_packets(void* base_context, PacketHeader header, uint8_t* payload, size_t payload_size) {
+void server_handle_packets(void* base_context, size_t thread_id, PacketHeader header, uint8_t* payload, size_t payload_size) {
     switch (header.flag) {
         case PACKET_HEADER_FLAG_NONE:
             break;
         case PACKET_HEADER_FLAG_SEND_TO_ALL:
-            server_send_to_all((Server*) base_context, header, payload, payload_size, 0); // TODO: fix this
+            server_send_to_all((Server*) base_context, header, payload, payload_size, thread_id);
             break;
         default:
             printf("[ERROR] Unknown Header Flag!\n");
