@@ -6,8 +6,8 @@
 #define TINYCSOCKET_IMPLEMENTATION
 #include "libs/tinycsocket.h"
 
-#include "server.h"
-#include "client.h"
+#include "server/server.h"
+#include "client/client.h"
 
 Server server = {0};
 Client client = {0};

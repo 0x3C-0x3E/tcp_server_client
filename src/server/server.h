@@ -3,13 +3,14 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include "libs/tinycsocket.h"
-#include "packets/packets.h"
-#include "libs/cthreads.h"
-#include "packets/types/ping_packet.h"
-#include "threads/threads.h"
+#include "../libs/tinycsocket.h"
+#include "../packets/packets.h"
+#include "../libs/cthreads.h"
+#include "../packets/types/ping_packet.h"
+#include "../threads/threads.h"
 
-#include "config.h"
+#include "../config.h"
+
 
 #define MAX_CLIENTS 128
 
@@ -20,6 +21,8 @@ typedef struct {
     size_t threads_count; 
     ThreadCollection threads[MAX_CLIENTS];
 } Server;
+
+#include "server_packet_handler.h"
 
 int server_init(Server* server);
 

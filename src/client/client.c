@@ -1,8 +1,4 @@
 #include "client.h"
-#include "packets/packets.h"
-#include "packets/types/data_packet.h"
-#include <stdint.h>
-#include <string.h>
 
 int client_init(Client* client) {
     if (tcs_lib_init() != 0) {
@@ -20,7 +16,7 @@ int client_init(Client* client) {
         return 1;
     }
 
-    if (tcs_connect(client->client_socket, "192.168.179.22", PORT)) {
+    if (tcs_connect(client->client_socket, ADDRESS, PORT)) {
         printf("Could not Connect to Socket at Port: %d\n", PORT);
         return 1;
     }

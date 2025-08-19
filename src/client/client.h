@@ -1,13 +1,14 @@
 #pragma once
-#include "libs/cthreads.h"
-#include "libs/tinycsocket.h"
-#include "packets/packets.h"
-#include "threads/threads.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
+#include "../libs/cthreads.h"
+#include "../libs/tinycsocket.h"
+#include "../packets/packets.h"
+#include "../threads/threads.h"
 
-#include "config.h"
+#include "../config.h"
 
 typedef struct {
     bool running;
