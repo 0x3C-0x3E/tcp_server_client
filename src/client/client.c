@@ -16,7 +16,13 @@ int client_init(Client* client) {
         return 1;
     }
 
-    if (tcs_connect(client->client_socket, ADDRESS, PORT)) {
+    char* addr = ADDRESS;
+    #ifdef USE_SELF
+    addr = "0.0.0.0";
+    #endif /* ifdef USE_SELF */
+
+
+    if (tcs_connect(client->client_socket, addr, PORT)) {
         printf("Could not Connect to Socket at Port: %d\n", PORT);
         return 1;
     }
